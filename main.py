@@ -31,14 +31,19 @@ class MagicRange:
 class L:
     def __init__(self, *nums):
         nums = [None]+list(nums) # add extra element to drop
-        false_ranges = []
+        ranges = []
         splits = [list(g) for k, g in groupby(nums, lambda x: x==etc) if not k]
+        if len(splits) == 1:
+            # there is just a discrete list of numbers
+            self.ranges = [splits[0][1:]]
+            return
+
         for i, l in enumerate(splits[1:]):
             #                    (all but first, upper bound)
-            false_ranges.append( ( splits[i][1:], l[0]        ) )
+            ranges.append( ( splits[i][1:], l[0]        ) )
 
         self.ranges = []
-        for nums, upper in false_ranges:
+        for nums, upper in ranges:
             if len(nums) < 3: # we assume algebraic
                 d = 1 if len(nums) == 1 else nums[-1]-nums[-2]
                 self.ranges.append( MagicRange(ALGEBRAIC, nums[0], upper, d))
@@ -64,6 +69,7 @@ class L:
             
             if broken: self.ranges.append(nums[:i])
             self.ranges.append(MagicRange(series, lower, upper, d))
+        self.ranges.append(splits[-1][1:])
 
     def __iter__(self):
         for nums in self.ranges:
